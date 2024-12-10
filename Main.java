@@ -9,15 +9,12 @@ public class Main {
         String fechaActual = hora.obtenerFechaActual();
         String horaActual = hora.obtenerHoraActual();
 
-        JFrame parentFrame = new JFrame();
-        parentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        parentFrame.setVisible(false); 
-
-        Verificacion verificacion = new Verificacion(parentFrame);
+        Verificacion verificacion = new Verificacion(null);
         
         String modelo = verificacion.getModelo();
         String numeroTelefono = verificacion.getNumeroTelefono();
         String nombreUsuario = verificacion.getNombreUsuario();
+        int tamano = verificacion.getTamano();
 
         JFrame inicioFrame = new JFrame("Pantalla de Inicio");
         inicioFrame.setSize(500, 700);
@@ -68,7 +65,7 @@ public class Main {
         botonInfo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String mensaje = String.format("Modelo: %s\nNúmero: %s", modelo, numeroTelefono);
+                String mensaje = String.format("Modelo: %s\nNúmero: %s\nTamaño: %d", modelo, numeroTelefono, tamano);
                 JOptionPane.showMessageDialog(inicioFrame, mensaje, "Información", JOptionPane.INFORMATION_MESSAGE);
             }
         });
