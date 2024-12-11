@@ -2,8 +2,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,20 +15,20 @@ public class LlamadasApp {
     private JTextField nombreField;
     private JTextField numeroField;
     private JFrame inicioFrame; 
-    private Map<String, String> indicativos; // Mapa para los indicativos
-    private Timer timer; // Temporizador para la duración de la llamada
-    private long startTime; // Tiempo de inicio de la llamada
-    private JButton colgarButton; // Botón para colgar la llamada
-    private JButton llamarButton; // Botón para llamar
-    private int llamadasDisponibles; // Contador de llamadas disponibles
-    private Informacion info; // Instancia de la clase Informacion
+    private Map<String, String> indicativos; 
+    private Timer timer; 
+    private long startTime; 
+    private JButton colgarButton; 
+    private JButton llamarButton; 
+    private int llamadasDisponibles; 
+    private Informacion info; 
 
-    public LlamadasApp(JFrame inicioFrame, Informacion info) {
+    public LlamadasApp(JFrame inicioFrame,Informacion info) {
         this.inicioFrame = inicioFrame; 
-        this.info = info; // Recibir la instancia de Informacion
+        this.info = new Informacion("Modelo X", "123456789", "Snapdragon 888", 100); 
         frame = new JFrame("Aplicación de Llamadas");
-        frame.setSize(400, 400); // Ajustar el tamaño de la ventana
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cambiar a DISPOSE_ON_CLOSE
+        frame.setSize(400, 400); 
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
         frame.setLayout(new BorderLayout());
 
         textArea = new JTextArea();
@@ -39,7 +37,7 @@ public class LlamadasApp {
         frame.add(scrollPane, BorderLayout.CENTER);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(5, 2)); // Cambiar a 5 filas para los campos y botones
+        panel.setLayout(new GridLayout(5, 2)); 
 
         panel.add(new JLabel("Nombre:"));
         nombreField = new JTextField();
@@ -48,16 +46,6 @@ public class LlamadasApp {
         panel.add(new JLabel("Número:"));
         numeroField = new JTextField();
         panel.add(numeroField);
-
-        numeroField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                char c = e.getKeyChar();
-                if (!Character.isDigit(c) && c != KeyEvent.VK_BACK_SPACE) {
-                    e.consume(); // No permitir caracteres no numéricos
-                }
-            }
-        });
 
         llamarButton = new JButton("Llamar");
         llamarButton.addActionListener(new ActionListener() {
@@ -69,7 +57,7 @@ public class LlamadasApp {
         panel.add(llamarButton);
 
         colgarButton = new JButton("Colgar");
-        colgarButton.setEnabled(false); // Deshabilitar el botón al inicio
+        colgarButton.setEnabled(false); 
         colgarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -91,11 +79,9 @@ public class LlamadasApp {
         frame.add(panel, BorderLayout.SOUTH);
         frame.setVisible(true);
 
-        // Inicializar el mapa de indicativos
         inicializarIndicativos();
         
-        // Inicializar el contador de llamadas disponibles
-        llamadasDisponibles = 5; // Por ejemplo, permitir 5 llamadas
+        llamadasDisponibles = 5; 
     }
 
     private void inicializarIndicativos() {
@@ -106,40 +92,50 @@ public class LlamadasApp {
         indicativos.put("1", "Estados Unidos / Canadá");
         indicativos.put("+34", "España");
         indicativos.put("34", "España");
-        // Agregar más indicativos según sea necesario
+        indicativos.put("+52", "México");
+        indicativos.put("52", "México");
     }
 
     private void realizarLlamada() {
         String nombre = nombreField.getText();
-        String numero = numeroField.getText();
-
-        if (nombre.isEmpty() || numero.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Por favor, ingrese un nombre y un número.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Verificar si hay llamadas disponibles
-        if (llamadasDisponibles > 0) {
-            textArea.append("L lamando a " + nombre + " (" + numero + ")\n");
-            llamadasDisponibles--;
-            info.reducirTamano(1); // Reducir el tamaño de almacenamiento en -1
-            colgarButton.setEnabled(true);
-            llamarButton.setEnabled(false);
-
-            // Iniciar temporizador para la duración de la llamada
-            startTime = System.currentTimeMillis();
-            timer = new Timer();
-            timer.scheduleAtFixedRate(new TimerTask() {
-                @Override
-                public void run() {
-                    long elapsedTime = System.currentTimeMillis() - startTime;
-                    String formattedTime = new SimpleDateFormat("mm:ss").format(new Date(elapsedTime));
-                    textArea.append("Duración de la llamada: " + formattedTime + "\n");
-                }
-            }, 0, 1000); // Actualizar cada segundo
+        String numero = numeroField.getText().replaceAll("\\s+", ""); 
+    
+        if (!nombre.isEmpty() && !numero.isEmpty()) {
+            String indicativo = null;
+    
+            if (numero.startsWith("+")) {
+                indicativo = numero.substring(0, 3); 
+            } else if (numero.startsWith("57") || numero.startsWith("1") || numero.startsWith("34") || numero.startsWith("52")) {
+                indicativo = numero.substring(0, 2); 
+            } else {
+                JOptionPane.showMessageDialog(frame, "Número no válido. Asegúrate de incluir el indicativo correcto.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+    
+            if (indicativos.containsKey(indicativo)) {
+                textArea.append("Llamando a " + nombre + " (" + numero + ")\n");
+                colgarButton.setEnabled(true);
+                llamarButton.setEnabled(false);
+                startTime = System.currentTimeMillis();
+                iniciarTemporizador();
+            } else {
+                JOptionPane.showMessageDialog(frame, "Número no válido. Asegúrate de incluir el indicativo correcto.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         } else {
-            JOptionPane.showMessageDialog(frame, "No hay llamadas disponibles.", "Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Por favor, completa todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void iniciarTemporizador() {
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                String tiempo = new SimpleDateFormat("mm:ss").format(new Date(elapsedTime));
+                textArea.append("Duración de la llamada: " + tiempo + "\n");
+            }
+        }, 0, 1000);
     }
 
     private void colgarLlamada() {
@@ -147,7 +143,12 @@ public class LlamadasApp {
         colgarButton.setEnabled(false);
         llamarButton.setEnabled(true);
         if (timer != null) {
-            timer.cancel(); // Detener el temporizador
+            timer.cancel();
+        }
+        llamadasDisponibles--;
+        if (llamadasDisponibles <= 0) {
+            JOptionPane.showMessageDialog(frame, "No hay llamadas disponibles.", "Error", JOptionPane.ERROR_MESSAGE);
+            llamarButton.setEnabled(false);
         }
     }
 }

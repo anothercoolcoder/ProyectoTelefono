@@ -1,94 +1,136 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+    import javax.swing.*;
+    import java.awt.*;
 
-public class Main {
-    public static void main(String[] args) {
-        // Obtener la fecha y hora actual
-        Hora hora = new Hora();
-        String fechaActual = hora.obtenerFechaActual();
-        String horaActual = hora.obtenerHoraActual();
+    public class Main {
+        public static void main(String[] args) {
+            Hora hora = new Hora();
+            String fechaActual = hora.obtenerFechaActual();
+            String horaActual = hora.obtenerHoraActual();
 
-        // Verificar la información del usuario
-        Verificacion verificacion = new Verificacion(null);
-        
-        String modelo = verificacion.getModelo();
-        String numeroTelefono = verificacion.getNumeroTelefono();
-        String nombreUsuario = verificacion.getNombreUsuario();
-        int tamano = verificacion.getTamano();
-        String procesador = verificacion.getProcesador(); // Obtener el procesador
+            Verificacion verificacion = new Verificacion(null);
+            
+            String modelo = verificacion.getModelo();
+            String numeroTelefono = verificacion.getNumeroTelefono();
+            String nombreUsuario = verificacion.getNombreUsuario();
+            int tamano = verificacion.getTamano();
+            String procesador = verificacion.getProcesador(); 
 
-        // Validar la información del usuario
-        if (nombreUsuario == null || modelo == null || numeroTelefono == null || procesador == null) {
-            JOptionPane.showMessageDialog(null, "Error: Información del usuario incompleta.", "Error", JOptionPane.ERROR_MESSAGE);
-            return; // Salir si hay un error
+            if (nombreUsuario == null || modelo == null || numeroTelefono == null || procesador == null) {
+                JOptionPane.showMessageDialog(null, "Error: Información del usuario incompleta.", "Error", JOptionPane.ERROR_MESSAGE);
+                return; 
+            }
+
+            JFrame inicioFrame = new JFrame("Pantalla de Inicio");
+            inicioFrame.setSize(500, 700);
+            inicioFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            inicioFrame.setLayout(new BorderLayout());
+
+            JLabel saludoLabel = new JLabel("Bienvenido, " + nombreUsuario, SwingConstants.CENTER);
+            inicioFrame.add(saludoLabel, BorderLayout.NORTH);
+
+            JLabel fechaLabel = new JLabel("Fecha: " + fechaActual, SwingConstants.CENTER);
+            JLabel horaLabel = new JLabel("Hora: " + horaActual, SwingConstants.CENTER);
+            JPanel panelFechaHora = new JPanel(new GridLayout(2, 1));
+            panelFechaHora.add(fechaLabel);
+            panelFechaHora.add(horaLabel);
+            inicioFrame.add(panelFechaHora, BorderLayout.CENTER);
+
+            JPanel panelBotones = new JPanel();
+            panelBotones.setLayout(new GridLayout(5, 2)); 
+
+            Informacion info = new Informacion(modelo, numeroTelefono, procesador, tamano);
+
+            JButton botonCalculadora = new JButton("Abrir Calculadora");
+            botonCalculadora.addActionListener(e -> new CalculadoraApp(inicioFrame));
+            panelBotones.add(botonCalculadora);
+
+            JButton botonMensajeria = new JButton("Abrir Mensajes");
+            botonMensajeria.addActionListener(e -> new MensajeriaApp(inicioFrame, info)); 
+            panelBotones.add(botonMensajeria);
+
+            JButton abrirLlamadasButton = new JButton("Abrir Llamadas");
+            abrirLlamadasButton.addActionListener(e -> {
+                new LlamadasApp(inicioFrame, info); 
+                inicioFrame.setVisible(false); 
+            });
+            panelBotones.add(abrirLlamadasButton); 
+
+            JButton botonInfo = new JButton("Información");
+            botonInfo.addActionListener(e -> {
+                String mensaje = String.format(" Modelo: %s\nNúmero: %s\nTamaño: %d\nProcesador: %s", modelo, numeroTelefono, tamano, procesador);
+                JOptionPane.showMessageDialog(inicioFrame, mensaje, "Información", JOptionPane.INFORMATION_MESSAGE);
+            });
+            panelBotones.add(botonInfo);
+
+            JButton botonColor = new JButton("Cambiar Color de Interfaz");
+            botonColor.addActionListener(e -> {
+                String[] colores = {"Rojo", "Verde", "Azul", "Amarillo", "Morado"};
+                String seleccion = (String) JOptionPane.showInputDialog(null, "Seleccione un color", "Color", JOptionPane.QUESTION_MESSAGE, null, colores, colores[0]);
+            
+                if (seleccion != null) {
+                    Color nuevoColor;
+                    switch (seleccion) {
+                        case "Rojo":
+                            nuevoColor = Color.RED;
+                            break;
+                        case "Verde":
+    nuevoColor = Color.GREEN;
+                            break;
+                        case "Azul":
+                            nuevoColor = Color.BLUE;
+                            break;
+                        case "Amarillo":
+                            nuevoColor = Color.YELLOW;
+                            break;
+                        case "Morado":
+                            nuevoColor = Color.MAGENTA;
+                            break;
+                        default:
+                            nuevoColor = Color.WHITE; 
+                    }
+            
+                    inicioFrame.getContentPane().setBackground(nuevoColor);
+            
+                    actualizarColorComponentes(inicioFrame.getContentPane(), nuevoColor);
+                }
+            });
+            panelBotones.add(botonColor); 
+
+            JButton botonSnake = new JButton("Abrir Snake");
+            botonSnake.addActionListener(e -> {
+                inicioFrame.setVisible(false); 
+                new Snake(inicioFrame); 
+            });
+            panelBotones.add(botonSnake); 
+
+            JPanel panelContenedor = new JPanel();
+            panelContenedor.setLayout(new BorderLayout());
+            panelContenedor.add(panelBotones, BorderLayout.NORTH);
+
+            Teclado teclado = new Teclado();
+            panelContenedor.add(teclado, BorderLayout.SOUTH); 
+
+            inicioFrame.add(panelContenedor, BorderLayout.SOUTH);
+
+            inicioFrame.setVisible(true);
         }
 
-        // Crear la ventana principal
-        JFrame inicioFrame = new JFrame("Pantalla de Inicio");
-        inicioFrame.setSize(500, 700);
-        inicioFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        inicioFrame.setLayout(new BorderLayout());
-
-        // Agregar etiquetas de saludo y fecha/hora
-        JLabel saludoLabel = new JLabel("Bienvenido, " + nombreUsuario, SwingConstants.CENTER);
-        inicioFrame.add(saludoLabel, BorderLayout.NORTH);
-
-        JLabel fechaLabel = new JLabel("Fecha: " + fechaActual, SwingConstants.CENTER);
-        JLabel horaLabel = new JLabel("Hora: " + horaActual, SwingConstants.CENTER);
-        JPanel panelFechaHora = new JPanel(new GridLayout(2, 1));
-        panelFechaHora.add(fechaLabel);
-        panelFechaHora.add(horaLabel);
-        inicioFrame.add(panelFechaHora, BorderLayout.CENTER);
-
-        // Crear panel de botones
-        JPanel panelBotones = new JPanel();
-        panelBotones.setLayout(new GridLayout(3, 2));
-
-        // Botón para abrir la calculadora
-        JButton botonCalculadora = new JButton("Abrir Calculadora");
-        botonCalculadora.addActionListener(e -> new CalculadoraApp(inicioFrame));
-        panelBotones.add(botonCalculadora);
-
-        // Botón para abrir la mensajería
-        JButton botonMensajeria = new JButton("Abrir Mensajes");
-        botonMensajeria.addActionListener(e -> new MensajeriaApp(inicioFrame));
-        panelBotones.add(botonMensajeria);
-
-        // Crear una instancia de Informacion
-        Informacion info = new Informacion(modelo, numeroTelefono, procesador, tamano);
-
-        // Botón para abrir la aplicación de llamadas
-        JButton abrirLlamadasButton = new JButton("Abrir Llamadas");
-        abrirLlamadasButton.addActionListener(e -> {
-            new LlamadasApp(inicioFrame, info); // Pasar ambos parámetros
-            inicioFrame.setVisible(false); // Ocultar el JFrame principal
-        });
-        panelBotones.add(abrirLlamadasButton); // Agregar el botón al panel
-
-        // Botón para mostrar información
-        JButton botonInfo = new JButton("Información");
-        botonInfo.addActionListener(e -> {
-            // Incluir el procesador en el mensaje
-            String mensaje = String.format(" Modelo: %s\nNúmero: %s\nTamaño: %d\nProcesador: %s", modelo, numeroTelefono, tamano, procesador);
-            JOptionPane.showMessageDialog(inicioFrame, mensaje, "Información", JOptionPane.INFORMATION_MESSAGE);
-        });
-        panelBotones.add(botonInfo);
-
-        // Crear contenedor para los botones y el teclado
-        JPanel panelContenedor = new JPanel();
-        panelContenedor.setLayout(new BorderLayout());
-        panelContenedor.add(panelBotones, BorderLayout.NORTH);
-
-        // Agregar teclado (asegúrate de que la clase Teclado esté implementada)
-        Teclado teclado = new Teclado();
-        panelContenedor.add(teclado, BorderLayout.SOUTH); 
-
-        // Agregar el contenedor al marco principal
-        inicioFrame.add(panelContenedor, BorderLayout.SOUTH);
-
-        // Hacer visible la ventana
-        inicioFrame.setVisible(true);
+        private static void actualizarColorComponentes(Container contenedor, Color nuevoColor) {
+            for (Component componente : contenedor.getComponents()) {
+                if (componente instanceof JPanel || componente instanceof JComponent) {
+                    componente.setBackground(nuevoColor);
+            
+                    Color textoColor = (nuevoColor == Color.YELLOW || nuevoColor == Color.WHITE) ? Color.BLACK : Color.WHITE;
+                    if (componente instanceof JLabel) {
+                        ((JLabel) componente).setForeground(textoColor);
+                    } else if (componente instanceof JButton) {
+                        ((JButton) componente).setForeground(textoColor);
+                    }
+            
+                    if (componente instanceof Container) {
+                        actualizarColorComponentes((Container) componente, nuevoColor);
+                    }
+                }
+            }
+        }
     }
-}

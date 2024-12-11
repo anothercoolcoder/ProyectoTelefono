@@ -11,16 +11,15 @@ public class Snake extends JPanel implements ActionListener {
     private final int WIDTH = 600;
     private final int HEIGHT = 400;
     private final int DOT_SIZE = 10;
-    private final int ALL_DOTS = (WIDTH * HEIGHT) / (DOT_SIZE * DOT_SIZE);
     private final int DELAY = 100;
 
     private ArrayList<Point> snake;
     private Point food;
     private char direction;
     private boolean running;
-    private JButton backButton; // Botón para regresar
+    private JButton backButton; 
 
-    public Snake() {
+    public Snake(JFrame parentFrame) {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setBackground(Color.BLACK);
         setFocusable(true);
@@ -52,16 +51,16 @@ public class Snake extends JPanel implements ActionListener {
         timer.start();
         startGame();
 
-        // Crear el botón de regresar
         backButton = new JButton("Regresar");
         backButton.setBounds(WIDTH / 2 - 50, HEIGHT - 50, 100, 30);
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.exit(0); // Cerrar el juego actual
+                parentFrame.setVisible(true); 
+                ((JFrame) SwingUtilities.getWindowAncestor(Snake.this)).dispose(); 
             }
         });
-        this.setLayout(null); // Usar un layout nulo para posicionar el botón
+        this.setLayout(null); 
         this.add(backButton);
     }
 
@@ -123,7 +122,7 @@ public class Snake extends JPanel implements ActionListener {
                 newHead.y++;
                 break;
             case 'A':
-                newHead.x--;
+ newHead.x--;
                 break;
             case 'D':
                 newHead.x++;
@@ -131,7 +130,9 @@ public class Snake extends JPanel implements ActionListener {
         }
 
         snake.add(0, newHead);
-        snake.remove(snake.size() - 1);
+        if (running) {
+            snake.remove(snake.size() - 1);
+        }
     }
 
     private void checkCollision() {
@@ -150,12 +151,11 @@ public class Snake extends JPanel implements ActionListener {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Snake Game");
-        Snake snakeGame = new Snake();
+        Snake snakeGame = new Snake(frame);
         frame.add(snakeGame);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
     }
-
 }

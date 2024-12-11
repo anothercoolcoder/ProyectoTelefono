@@ -1,20 +1,14 @@
-import javax.swing.*;
-import java.awt.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Hora {
     public String obtenerFechaActual() {
-        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy");
-        return formatoFecha.format(new Date());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return LocalDateTime.now().format(formatter);
     }
 
     public String obtenerHoraActual() {
-        SimpleDateFormat formatoHora = new SimpleDateFormat("HH:mm:ss");
-        return formatoHora.format(new Date());
-    }
-
-    public static void main(String[] args) {
-        new Hora();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        return LocalDateTime.now().format(formatter);
     }
 }
