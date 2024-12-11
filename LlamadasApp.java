@@ -23,7 +23,7 @@ public class LlamadasApp {
     private int llamadasDisponibles; 
     private Informacion info; 
 
-    public LlamadasApp(JFrame inicioFrame,Informacion info) {
+    public LlamadasApp(JFrame inicioFrame, Informacion info) {
         this.inicioFrame = inicioFrame; 
         this.info = new Informacion("Modelo X", "123456789", "Snapdragon 888", 100); 
         frame = new JFrame("Aplicación de Llamadas");
@@ -99,10 +99,11 @@ public class LlamadasApp {
     private void realizarLlamada() {
         String nombre = nombreField.getText();
         String numero = numeroField.getText().replaceAll("\\s+", ""); 
-    
+
         if (!nombre.isEmpty() && !numero.isEmpty()) {
             String indicativo = null;
-    
+            String pais = null; 
+
             if (numero.startsWith("+")) {
                 indicativo = numero.substring(0, 3); 
             } else if (numero.startsWith("57") || numero.startsWith("1") || numero.startsWith("34") || numero.startsWith("52")) {
@@ -111,9 +112,10 @@ public class LlamadasApp {
                 JOptionPane.showMessageDialog(frame, "Número no válido. Asegúrate de incluir el indicativo correcto.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-    
+
             if (indicativos.containsKey(indicativo)) {
-                textArea.append("Llamando a " + nombre + " (" + numero + ")\n");
+                pais = indicativos.get(indicativo); 
+                textArea.append("Llamando a " + nombre + " (" + numero + ") desde " + pais + "\n");
                 colgarButton.setEnabled(true);
                 llamarButton.setEnabled(false);
                 startTime = System.currentTimeMillis();
