@@ -15,6 +15,7 @@ public class Main {
         String numeroTelefono = verificacion.getNumeroTelefono();
         String nombreUsuario = verificacion.getNombreUsuario();
         int tamano = verificacion.getTamano();
+        String procesador = verificacion.getProcesador(); // Obtener el procesador
 
         JFrame inicioFrame = new JFrame("Pantalla de Inicio");
         inicioFrame.setSize(500, 700);
@@ -65,7 +66,8 @@ public class Main {
         botonInfo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String mensaje = String.format("Modelo: %s\nNúmero: %s\nTamaño: %d", modelo, numeroTelefono, tamano);
+                // Incluir el procesador en el mensaje
+                String mensaje = String.format("Modelo: %s\nNúmero: %s\nTamaño: %d\nProcesador: %s", modelo, numeroTelefono, tamano, procesador);
                 JOptionPane.showMessageDialog(inicioFrame, mensaje, "Información", JOptionPane.INFORMATION_MESSAGE);
             }
         });

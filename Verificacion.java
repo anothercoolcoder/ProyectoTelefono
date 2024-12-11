@@ -6,14 +6,16 @@ public class Verificacion {
     private String numeroTelefono;
     private String nombreUsuario;
     private int tamano; 
+    private String procesador; // Nueva variable para almacenar el procesador
 
     public Verificacion(JFrame parentFrame) {
-        JPanel panel = new JPanel(new GridLayout(4, 2)); 
+        JPanel panel = new JPanel(new GridLayout(5, 2)); // Cambiar a 5 filas para incluir el procesador
 
         JTextField nombreField = new JTextField();
         JTextField modeloField = new JTextField();
         JTextField numeroField = new JTextField();
         JTextField tamanoField = new JTextField();
+        JTextField procesadorField = new JTextField(); // Campo para el procesador
 
         panel.add(new JLabel("Nombre: "));
         panel.add(nombreField);
@@ -23,6 +25,8 @@ public class Verificacion {
         panel.add(numeroField);
         panel.add(new JLabel("Tamaño: "));
         panel.add(tamanoField);
+        panel.add(new JLabel("Procesador: ")); // Etiqueta para el procesador
+        panel.add(procesadorField); // Agregar el campo para el procesador
 
         int option = JOptionPane.showConfirmDialog(parentFrame, panel, "Ingrese su información", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
@@ -44,6 +48,7 @@ public class Verificacion {
                         modelo = null;
                         numeroTelefono = null;
                         tamano = 0;
+                        procesador = null; // Reiniciar procesador si se cancela
                         return; 
                     }
                 }
@@ -63,15 +68,20 @@ public class Verificacion {
                         modelo = null;
                         numeroTelefono = null;
                         tamano = 0;
+                        procesador = null; // Reiniciar procesador si se cancela
                         return; 
                     }
                 }
             }
+
+            // Obtener el procesador
+            procesador = procesadorField.getText().trim(); // Guardar el valor del procesador
         } else {
             nombreUsuario = null;
             modelo = null;
             numeroTelefono = null;
             tamano = 0;
+            procesador = null; // Reiniciar procesador si se cancela
         }
     }
 
@@ -89,5 +99,9 @@ public class Verificacion {
 
     public int getTamano() {
         return tamano;
+    }
+
+    public String getProcesador() { // Método para obtener el procesador
+        return procesador;
     }
 }
