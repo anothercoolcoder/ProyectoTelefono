@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 
 public class CalculadoraApp {
     private JFrame frame;
@@ -9,6 +10,7 @@ public class CalculadoraApp {
     private double num1, num2, resultado;
     private String operador;
     private JFrame inicioFrame; 
+    private DecimalFormat decimalFormat; // Para formatear los números
 
     public CalculadoraApp(JFrame inicioFrame) {
         this.inicioFrame = inicioFrame; 
@@ -21,14 +23,14 @@ public class CalculadoraApp {
         frame.add(textField, BorderLayout.NORTH);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(5, 4)); 
+        panel.setLayout(new GridLayout(5, 4)); // Cambiado a 5 filas para incluir los nuevos botones
 
         String[] botones = {
             "7", "8", "9", "/",
             "4", "5", "6", "*",
             "1", "2", "3", "-",
             "0", "C", "=", "+",
-            "Regresar" 
+            "%", "^", "Regresar" // Añadido el botón de porcentaje y el botón de elevar
         };
 
         for (String texto : botones) {
@@ -39,6 +41,9 @@ public class CalculadoraApp {
 
         frame.add(panel, BorderLayout.CENTER);
         frame.setVisible(true);
+
+        // Inicializar el formato decimal
+        decimalFormat = new DecimalFormat("#,##0.##"); // Formato para mostrar con separador de miles y hasta dos decimales
     }
 
     private class BotonClickListener implements ActionListener {
@@ -70,8 +75,15 @@ public class CalculadoraApp {
                             return;
                         }
                         break;
+                    case "^": // Manejar la operación de elevar
+                        resultado = Math.pow(num1, num2);
+                        break;
+                    case "%": // Manejar la operación de porcentaje
+                        resultado = (num1 * num2) / 100; // num1 es el número y num2 es el porcentaje
+                        break;
                 }
-                textField.setText(String.valueOf(resultado));
+                // Formatear el resultado antes de mostrarlo
+                textField.setText(decimalFormat.format(resultado));
             } else if (comando.equals("Regresar")) {
                 frame.dispose(); 
                 inicioFrame.setVisible(true); 
