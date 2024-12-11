@@ -30,6 +30,7 @@ public class Verificacion {
             nombreUsuario = nombreField.getText().trim();
             modelo = modeloField.getText().trim();
 
+            // Validación del número de teléfono
             while (true) {
                 numeroTelefono = numeroField.getText().trim();
                 if (numeroTelefono.matches("\\d{10}")) { 
@@ -48,11 +49,23 @@ public class Verificacion {
                 }
             }
 
-            try {
-                tamano = Integer.parseInt(tamanoField.getText().trim());
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(parentFrame, "Por favor, ingrese un tamaño válido.", "Error", JOptionPane.ERROR_MESSAGE);
-                tamano = 0; 
+            // Validación del tamaño
+            while (true) {
+                try {
+                    tamano = Integer.parseInt(tamanoField.getText().trim());
+                    break; // Salir del bucle si se ingresa un tamaño válido
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(parentFrame, "Por favor, ingrese un tamaño válido (número entero).", "Error", JOptionPane.ERROR_MESSAGE);
+                    tamanoField.setText(""); // Limpiar el campo para que el usuario vuelva a intentarlo
+                    option = JOptionPane.showConfirmDialog(parentFrame, panel, "Ingrese su información", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                    if (option != JOptionPane.OK_OPTION) {
+                        nombreUsuario = null;
+                        modelo = null;
+                        numeroTelefono = null;
+                        tamano = 0;
+                        return; 
+                    }
+                }
             }
         } else {
             nombreUsuario = null;
