@@ -1,12 +1,9 @@
-import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,12 +21,16 @@ public class LlamadasApp {
     private Timer timer; // Temporizador para la duración de la llamada
     private long startTime; // Tiempo de inicio de la llamada
     private JButton colgarButton; // Botón para colgar la llamada
+    private JButton llamarButton; // Botón para llamar
+    private int llamadasDisponibles; // Contador de llamadas disponibles
+    private Informacion info; // Instancia de la clase Informacion
 
-    public LlamadasApp(JFrame inicioFrame) {
+    public LlamadasApp(JFrame inicioFrame, Informacion info) {
         this.inicioFrame = inicioFrame; 
+        this.info = info; // Recibir la instancia de Informacion
         frame = new JFrame("Aplicación de Llamadas");
         frame.setSize(400, 400); // Ajustar el tamaño de la ventana
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cambiar a DISPOSE_ON_CLOSE
         frame.setLayout(new BorderLayout());
 
         textArea = new JTextArea();
@@ -38,7 +39,7 @@ public class LlamadasApp {
         frame.add(scrollPane, BorderLayout.CENTER);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(5, 2)); 
+        panel.setLayout(new GridLayout(5, 2)); // Cambiar a 5 filas para los campos y botones
 
         panel.add(new JLabel("Nombre:"));
         nombreField = new JTextField();
@@ -52,13 +53,13 @@ public class LlamadasApp {
             @Override
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
-                if (Character.isDigit(c)) {
-                    reproducirSonidoTecla(); 
+                if (!Character.isDigit(c) && c != KeyEvent.VK_BACK_SPACE) {
+                    e.consume(); // No permitir caracteres no numéricos
                 }
             }
         });
 
-        JButton llamarButton = new JButton("Llamar");
+        llamarButton = new JButton("Llamar");
         llamarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -93,16 +94,8 @@ public class LlamadasApp {
         // Inicializar el mapa de indicativos
         inicializarIndicativos();
         
-        // Mostrar los indicativos disponibles
-        mostrarIndicativos();
-    }
-
-    private void mostrarIndicativos() {
-        StringBuilder sb = new StringBuilder("Indicativos disponibles:\n");
-        for (String indicativo : indicativos.keySet()) {
-            sb.append(indicativo).append(" - ").append(indicativos.get(indicativo)).append("\n");
-        }
-        JOptionPane.showMessageDialog(frame, sb.toString(), "Indicativos", JOptionPane.INFORMATION_MESSAGE);
+        // Inicializar el contador de llamadas disponibles
+        llamadasDisponibles = 5; // Por ejemplo, permitir 5 llamadas
     }
 
     private void inicializarIndicativos() {
@@ -113,108 +106,48 @@ public class LlamadasApp {
         indicativos.put("1", "Estados Unidos / Canadá");
         indicativos.put("+34", "España");
         indicativos.put("34", "España");
-        indicativos.put("+52", "México");
-        indicativos.put("52", "México");
+        // Agregar más indicativos según sea necesario
     }
 
     private void realizarLlamada() {
         String nombre = nombreField.getText();
-        String numero = numeroField.getText().replaceAll("\\s+", ""); // Eliminar espacios
+        String numero = numeroField.getText();
 
-        if (!nombre.isEmpty() && ! numero.isEmpty()) {
-            // Verifica el formato del número, permitiendo indicativo con o sin '+'
-            String indicativo = numero.startsWith("+") ? numero.substring(0, 3) : numero.substring(0, 2);
-            String pais = indicativos.get(indicativo); // Busca el país por el indicativo
+        if (nombre.isEmpty() || numero.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Por favor, ingrese un nombre y un número.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-            if (pais != null) {
-                Llamada llamada = new Llamada(nombre, numero);
-                textArea.append(llamada.toString() + " (Número de " + pais + ")\n");
-                nombreField.setText("");
-                numeroField.setText("");
+        // Verificar si hay llamadas disponibles
+        if (llamadasDisponibles > 0) {
+            textArea.append("L lamando a " + nombre + " (" + numero + ")\n");
+            llamadasDisponibles--;
+            info.reducirTamano(1); // Reducir el tamaño de almacenamiento en -1
+            colgarButton.setEnabled(true);
+            llamarButton.setEnabled(false);
 
-                // Reproducir sonido al iniciar la llamada
-                reproducirSonidoLlamada();
-
-                // Iniciar el temporizador para la duración de la llamada
-                startTime = System.currentTimeMillis();
-                timer = new Timer();
-                timer.scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        long elapsedTime = System.currentTimeMillis() - startTime;
-                        long seconds = (elapsedTime / 1000) % 60;
-                        long minutes = (elapsedTime / (1000 * 60)) % 60;
-                        long hours = (elapsedTime / (1000 * 60 * 60)) % 24;
-                        textArea.append("Duración de la llamada: " + hours + " horas, " + minutes + " minutos, " + seconds + " segundos.\n");
-                    }
-                }, 0, 1000); // Actualizar cada segundo
-
-                colgarButton.setEnabled(true); // Habilitar el botón de colgar
-                frame.setSize(400, 400); // Ajustar el tamaño de la ventana
-            } else {
-                JOptionPane.showMessageDialog(frame, "Indicativo no reconocido. Por favor, ingresa un indicativo válido.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-            }
+            // Iniciar temporizador para la duración de la llamada
+            startTime = System.currentTimeMillis();
+            timer = new Timer();
+            timer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    long elapsedTime = System.currentTimeMillis() - startTime;
+                    String formattedTime = new SimpleDateFormat("mm:ss").format(new Date(elapsedTime));
+                    textArea.append("Duración de la llamada: " + formattedTime + "\n");
+                }
+            }, 0, 1000); // Actualizar cada segundo
         } else {
-            JOptionPane.showMessageDialog(frame, "Por favor, ingresa el nombre y el número.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "No hay llamadas disponibles.", "Error", JOptionPane.WARNING_MESSAGE);
         }
     }
 
     private void colgarLlamada() {
+        textArea.append("Llamada finalizada.\n");
+        colgarButton.setEnabled(false);
+        llamarButton.setEnabled(true);
         if (timer != null) {
             timer.cancel(); // Detener el temporizador
-        }
-        colgarButton.setEnabled(false); // Deshabilitar el botón de colgar
-        textArea.append("La llamada ha sido colgada.\n");
-        frame.setSize(400, 300); // Restablecer el tamaño de la ventana
-    }
-
-    private void reproducirSonidoLlamada() {
-        try {
-            File sonido = new File("C://Users//andre//Downloads//SonidoLlamada.wav"); // Cambia la ruta al sonido de llamada
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(sonido);
-            Clip clip = AudioSystem.getClip();
-            clip.open(audioInputStream);
-            clip.start();
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void reproducirSonidoTecla() {
-        try {
-            File sonido = new File("C://Users//andre//Downloads//SonidoTecla.wav"); 
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(sonido);
-            Clip clip = AudioSystem.getClip();
-            clip.open(audioInputStream);
-            clip.start();
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) {
-        JFrame inicioFrame = new JFrame("Pantalla de Inicio");
-        inicioFrame.setSize(400, 300);
-        inicioFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        inicioFrame.setVisible(true);
-        
-        new LlamadasApp(inicioFrame); 
-    }
-
-    class Llamada {
-        private String nombre;
-        private String numero;
-        private String hora;
-
-        public Llamada(String nombre, String numero) {
-            this.nombre = nombre;
-            this.numero = numero;
-            this.hora = new SimpleDateFormat("HH:mm:ss").format(new Date());
-        }
-
-        @Override
-        public String toString() {
-            return "[" + hora + "] Llamada a " + nombre + " (Número: " + numero + ")";
         }
     }
 }
